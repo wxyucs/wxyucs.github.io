@@ -1,6 +1,9 @@
 # macOS
 .DS_Store
 
+# vim
+*.swp
+
 # jekyll files
 _site
 .sass-cache
