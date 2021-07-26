@@ -28,17 +28,15 @@ categories: dco github
 
 0x01 分析
 
-由于之前在他人的 PR 上看到过这个内容，但是由于时间的原因也没有深究。这次遇到了正好解决一下。
+之前见过这个错误，当时想办法绕过去了，这次又遇到正好深究一下。
 
-目前能得到的信息是：
+目前的情况是：
 
--   我的 GitHub 上 primary email 是 `wxyucs@gmail.com`
--   这个 PR 的 head 分支是我和另一个人协作的
+-   我的 GitHub Primary email 是 `wxyucs@gmail.com`
+-   这个 PR 的 head 分支是小A仓库的，我与他在这个分支上协作开发
 -   DCO 检查这个 action 是开源的
 
-
-
-我先从这个 GitHub Action 的源代码查起，我在代码里找到了这段检查和报错代码：
+我先从这个 GitHub Action 的源代码查起，在代码里找到了这段检查和报错代码：
 
 ```js
       if (!(authors.includes(sig.name.toLowerCase())) || !(emails.includes(sig.email.toLowerCase()))) {
@@ -47,11 +45,9 @@ categories: dco github
       }
 ```
 
-通过阅读上下文得知，commit 对象来自于 git，sig 对象来自于 git commit message 中的提取。目前 git commit message 的内容是符合我的预期的，那么看来问题就出在 git commit 的信息上了。
+通过阅读上下文得知，`commit` 对象来自于 Git commit，`sig` 对象来自于 Git commit message 中的提取。目前 Git commit message 的内容是符合预期的，那么看来问题就出在 Git commit 上了。
 
-
-
-我在本地开发环境拉取了这个 head 分支，用 git blame 命令找到了那一行修改，看到的内容如下：
+我在本地拉取了这个 head 分支，用命令 `git blame --line-porcelain` 找到了那一行修改，看到的内容如下：
 
 ```makefile
 bab823b7f5735a7f74d3ee69cda904f965d59b35 146 146 1
@@ -68,61 +64,36 @@ previous 6a2cfe43155d578abdd6b162229c38007061205c Makefile
 filename Makefile
 ```
 
-这里可以看到 author-mail 已经错了，这是我的邮箱，但不是我开发这部分内容时所希望使用的签名。另外，我发现这里的 committer 是 GitHub，这也是一个异常点。
+这里可以看到 `author-mail` 已经错了，虽然这是我的邮箱，但不是这部分内容所需要的签名。另外，我注意到这里的 `committer` 是 GitHub，通过与小A交流得知，我往他仓库的 head 分支提交代码时，他使用了 *Squash and merge*。
+
+到这里大致可以猜出错误的原因：我在本地开发提交时的签名是正确的。在往小A仓库的协作分支提交 PR 时，由于选择的是 *Squash and merge*，GitHub 用我的 GitHub Name 和 Primary email 作为作者的信息重新产生了一个 Git commit。所以在协作分支往主仓库提交 PR 时，检查到签名不匹配。而往常这个流程可用的原因是在协作分支上的 PR 使用的是 *Merge* 而不是 *Squash and merge*。
 
 
 
-于是，我回顾了一下代码提交的流程，head分支在小A的仓库，我的代码不是直接push上去的，而是通过PR进去的。与往常不同的一点是，小A在合并这个PR的时候使用的不是我们通常用的merge，而是squash merge。
-
-
-
-0x02 原因猜想
-
-结合上我的 GitHub 配置看，这就是问题所在：
-
-1.  我在自己仓库的一个分支上提交了一个 commit，使用了 -s 参数在 commit message 中加上了签名（signed-off
-2.  我给小A仓库的协作分支提交了一个PR，他使用了 squash and merge
-3.  GitHub 为这次 squash and merge 做了一次commit操作，并且留下信息，作者是我（我的GitHub Name和Primary Email），committer 是 GitHub
-4.  在协作分支向主仓库提交 PR 的时候，DCO 发现这个commit上的信息和commit message里的签名不一致，检查失败
-
-
-
-在 GitHub 上通过 PR 的方式产生的代码合并，背后实际上是 GitHub 帮你做了 `git merge`。
-
-当 PR 中的合并参数选择是 merge 时，GitHub 会在 git history 上创建一个新的 merge 节点，这个节点没有任何实质上的内容，只是记录从另一个分支合并过来。
-
-当 PR 中的合并参数选择是 squash 是，GitHub 会执行 `git merge - -squash` ，这个操作会把 head 分支上比 base 分支多的内容打包到一起，产生一个新的 commit，加到 base 分支的头部。
-
-在 A 的仓库中提交的 PR 由于选择的是 squash merge，GitHub 为此创建了一个 commit，并且使用了 PR 作者的 GitHub 名字和邮箱作为 commit 的作者信息。这时，如果 A 在本地配置的名字和邮箱与GitHub上的名字和邮箱对不上，就会在 DCO 检查时报错。
-
-
-
-0x03 复现实验
+0x02 复现实验
 
 有了以上的猜想，我按照如下步骤，果然复现了这个问题：
 
-1.  从 master 分支新建一个开发分支 dev
-2.  从 dev 分支上新建一个功能分支 feature-update-readme
+1.  从 `master` 分支新建一个开发分支 `dev`
+2.  从 `dev` 分支上新建一个功能分支 `feature-update-readme`
 3.  修改 readme，提交且签名（签上我的工作邮箱）
-4.  在网页上创建一个 Pull Request，dev <- feature-update-readme
-5.  在Merge按键右边三角形点开，选择 squash and merge
-6.  在网页上再创建一个 Pull Request，master <- dev
+4.  在网页上创建一个 PR1，dev <- feature-update-readme
+5.  在 PR1 的页面上，*Merge* 按键右边三角形点开，选择 *Squash and merge*
+6.  在网页上再创建一个 PR2，master <- dev
 
-此时可以看到，DCO 检查失败，发现commuter与signed-off不一致。
-
-
-
-0x04 结论与解决方案
-
-如果只有一个开发身份的话，应当把 GitHub 上的名字和 Primary Email 设置成与本地 git config 内容一致。如果有公司、个人甚至更多开发身份的时候，需要避免在开发分支上做 squash merge，可以取而代之使用 merge 或者 rebase merge。
-
-如果已经遇到了这个问题，可以使用命令 `git commit --amend --author="Author Name <email@address.com> " --no-edit` 来进行修改。
+在 PR2 的页面上可以看到，DCO 检查失败，发现 committer 与 signed-off 不一致。
 
 
 
+0x03 结论与解决方案
+
+如果只有一个开发身份的话，应当把 GitHub Name 和 Primary email 设置成与本地 Git config 内容一致。如果有公司、个人甚至更多开发身份的时候，需要避免在开发分支上做 squash merge。
+
+如果已经遇到了这个问题，可以使用命令 `git commit --amend --author="Author Name <email@address.com> " --no-edit` 修改作者信息重新提交。
 
 
-0x05 参考
+
+0x04 参考
 
 https://docs.github.com/en/github/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/merging-a-pull-request
 
