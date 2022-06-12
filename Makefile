@@ -1,6 +1,6 @@
 
 all:
-	jekyll build
+	bundle exec jekyll build
 
 install-deps-ubuntu:
 	gem install jekyll bundler:2.2.16
@@ -11,5 +11,5 @@ install-deps-macos: install-deps
 	xcrun bundle install
 
 serve:
-	bundle exec jekyll serve
+	bundle exec jekyll serve --host 0.0.0.0
 

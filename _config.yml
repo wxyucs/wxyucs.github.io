@@ -21,7 +21,7 @@
 title: Xiangyu Wang
 email: wxyucs@gmail.com
 description: >- # this means to ignore newlines until "baseurl:"
-  I'm a software engineer at Zilliz and a maintainer of Milvus.<br>
+  I'm a software engineer and a maintainer at Milvus.<br>
   I'm interested in heterogeneous computing.<br>
   I believe that ARM is the future of computing.
 baseurl: "/" # the subpath of your site, e.g. /blog

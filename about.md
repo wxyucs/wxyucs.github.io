@@ -14,5 +14,3 @@ I like football very much. I am a fan of Cristiano Ronaldo and Robert Lewandowsk
 
 This is not a tech blog, I will also share some things I am interested in and my thoughts on some problems.
 
-
-
