@@ -14,3 +14,7 @@ I like football very much. I am a fan of Cristiano Ronaldo and Robert Lewandowsk
 
 This is not a tech blog, I will also share some things I am interested in and my thoughts on some problems.
 
+## Interviews
+
+- [王翔宇：我享受 Coding 的过程](https://gitee.com/gitee-stars/22)
+- [They use Mergify: Milvus](https://blog.mergify.com/they-use-mergify-milvus/)
