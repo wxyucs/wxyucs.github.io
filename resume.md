@@ -38,7 +38,7 @@ In the five years after graduation, I have been engaged in database development.
 - Built the JIT execution engine(dynamically convert SQL to CUDA function) which makes the SCAN and AGGREGATION speed up to more than a hundred time than CPU.
 
 ## Education
-<b>Software Engineering Institute of Guangzhou</b><br>
+<b>South China Institute of Software Engineering,Guangzhou University</b><br>
 <b>BE, Internet of things</b><br>
 <b>Sep 2012 - June 2016</b><br>
 
