@@ -51,8 +51,8 @@ Bloom filter是一个数据结构，由一个长度为`m`的比特位数组和`k
 
 一些在线的Bloom filter参数计算器：
 
-- https://hur.st/bloomfilter/
-- https://krisives.github.io/bloom-calculator/
+- <https://hur.st/bloomfilter/>
+- <https://krisives.github.io/bloom-calculator/>
 
 <br>
 **应用**
