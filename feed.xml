@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.2.0">Jekyll</generator><link href="https://xyw.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://xyw.io/" rel="alternate" type="text/html" /><updated>2023-01-13T18:11:04+00:00</updated><id>https://xyw.io/feed.xml</id><title type="html">Xiangyu Wang</title><subtitle>I'm a software engineer and a maintainer at Milvus.&lt;br&gt; I'm interested in heterogeneous computing.&lt;br&gt; I believe that ARM is the future of computing.</subtitle><entry><title type="html">What is Bloom filter</title><link href="https://xyw.io/note/bloomfilter/2022/06/14/what-is-bloom-filter.html" rel="alternate" type="text/html" title="What is Bloom filter" /><published>2022-06-14T17:26:00+00:00</published><updated>2022-06-14T17:26:00+00:00</updated><id>https://xyw.io/note/bloomfilter/2022/06/14/what-is-bloom-filter</id><content type="html" xml:base="https://xyw.io/note/bloomfilter/2022/06/14/what-is-bloom-filter.html">&lt;p&gt;Bloom filter是一个概率数据结构，用于检测一个元素是否存在于一个集合中，特点是空间占用少、计算速度快。&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;
+&lt;strong&gt;基本原理&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Bloom filter是一个数据结构，由一个长度为&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;m&lt;/code&gt;的比特位数组和&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;个相互独立的哈希函数组成。每个哈希函数都可以将一个元素映射到数组的一个比特位上。&lt;/p&gt;
+
+&lt;p&gt;元素加入集合的方法是，先用哈希函数将这个元素映射到&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;个位置，而后将比特位数组中的这&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;个位置的值都置为&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt;。显而易见，在确定哈希函数和元素的情况下，比特位数组中置为1 的位置也是确定的。&lt;/p&gt;
+
+&lt;p&gt;查询元素在集合中是否存在的方法是，先用哈希函数把元素映射成&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;个位置，然后再检查比特位数组中这&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;个位置的值。如果全是&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt;则返回真，表示元素可能存在，相反则返回假，表示元素肯定不存在。&lt;/p&gt;
+
+&lt;p&gt;这里说元素可能存在是因为这&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;个位置的&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1&lt;/code&gt;可能是在别的元素加入集合时设置的，被查询元素可能不在集合中。其他元素写入导致查询结果为真但实际上元素不在集合中，这种情况叫误报（假阳性）。误报是有一定概率的，叫误报率（假阳性率）。&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;
+&lt;strong&gt;误报率（假阳性率）&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;误报率由元素数量&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt;、比特位数组长度&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;m&lt;/code&gt;和哈希函数数量&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;共同决定。&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Bloom_filter#Probability_of_false_positives&quot; title=&quot;Probability of false positives&quot;&gt;误报率近似公式&lt;/a&gt;：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://wikimedia.org/api/rest_v1/media/math/render/svg/de73929baec5fd76dde95874189051648c635b1d&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;简单来说，&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;元素数量越多，误报率越高&lt;/li&gt;
+  &lt;li&gt;比特位数组越短，误报率越高&lt;/li&gt;
+  &lt;li&gt;哈希函数越少，误报率越高&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;所以，提升比特位数组长度和哈希函数数量可以降低误报率。但是，提升数组长度和哈希函数数量的代价是，比特位数组越长，所需存储空间越大；哈希函数数量越多，每次插入和查询的过程就越慢。&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;
+&lt;strong&gt;如何配置参数n、m、k？&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://en.wikipedia.org/wiki/Bloom_filter#Optimal_number_of_hash_functions&quot; title=&quot;Optimal number of hash functions&quot;&gt;使用n和m计算最优k值的公式&lt;/a&gt;：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://wikimedia.org/api/rest_v1/media/math/render/svg/fabc2770225ac59fe42a78f75ea89de650f0130c&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;于是，可以通过以下步骤确定参数：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;确定集合的数据量&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;确定预期的存储大小&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;m&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;使用公式计算得到&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;使用&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;n&lt;/code&gt;、&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;m&lt;/code&gt;和&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;k&lt;/code&gt;计算得到误报率&lt;/li&gt;
+  &lt;li&gt;若误报率太高，回到第2步通过提升&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;m&lt;/code&gt;来调整&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;一些在线的Bloom filter参数计算器：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://hur.st/bloomfilter/&quot;&gt;https://hur.st/bloomfilter/&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://krisives.github.io/bloom-calculator/&quot;&gt;https://krisives.github.io/bloom-calculator/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;br /&gt;
+&lt;strong&gt;应用&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;在存储系统中，可以使用Bloom filter来判断一条记录是否在表中存在，从而减少磁盘I/O。例如，&lt;a href=&quot;https://static.googleusercontent.com/media/research.google.com/en//archive/bigtable-osdi06.pdf&quot; title=&quot;Bigtable: A Distributed Storage System for Structured Data&quot;&gt;BigTable论文&lt;/a&gt;中提到了使用Bloom filter来优化读取操作：在BigTable中，读取操作需要访问所有的SSTable。若这些SSTable不在内存中，可能会产生多次磁盘访问。BigTable可以为每个SSTable都建立一个Bloom filter，这样可以快速地知道一条指定的数据在一个SSTable中是否存在，从而避免无效的磁盘访问。&lt;/p&gt;</content><author><name></name></author><category term="note" /><category term="bloomfilter" /><summary type="html">Bloom filter是一个概率数据结构，用于检测一个元素是否存在于一个集合中，特点是空间占用少、计算速度快。</summary></entry><entry><title type="html">Yunnan</title><link href="https://xyw.io/photography/2022/03/30/yunnan.html" rel="alternate" type="text/html" title="Yunnan" /><published>2022-03-30T16:00:00+00:00</published><updated>2022-03-30T16:00:00+00:00</updated><id>https://xyw.io/photography/2022/03/30/yunnan</id><content type="html" xml:base="https://xyw.io/photography/2022/03/30/yunnan.html">&lt;p&gt;&lt;img src=&quot;/public/img/DSC00733.jpeg&quot; alt=&quot;DSC00733&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC00818.jpeg&quot; alt=&quot;DSC00818&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC00862.jpeg&quot; alt=&quot;DSC00862&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC00912.jpeg&quot; alt=&quot;DSC00912&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC00942.jpeg&quot; alt=&quot;DSC00942&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC01024.jpeg&quot; alt=&quot;DSC01024&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC01160.jpeg&quot; alt=&quot;DSC01160&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC01337.jpeg&quot; alt=&quot;DSC01337&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC01343.jpeg&quot; alt=&quot;DSC01343&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC01396.jpeg&quot; alt=&quot;DSC01396&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC01408.jpeg&quot; alt=&quot;DSC01408&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC01448.jpeg&quot; alt=&quot;DSC01448&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC01493.jpeg&quot; alt=&quot;DSC01493&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC01580.jpeg&quot; alt=&quot;DSC01580&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC01630.jpeg&quot; alt=&quot;DSC01630&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC01632.jpeg&quot; alt=&quot;DSC01632&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC01656.jpeg&quot; alt=&quot;DSC01656&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC01688.jpeg&quot; alt=&quot;DSC01688&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC01784.jpeg&quot; alt=&quot;DSC01784&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/public/img/DSC01887.jpeg&quot; alt=&quot;DSC01887&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;br /&gt;&lt;/p&gt;</content><author><name></name></author><category term="photography" /><summary type="html"></summary></entry><entry><title type="html">DCO check failed</title><link href="https://xyw.io/dco/github/2021/06/18/dco-check-failed.html" rel="alternate" type="text/html" title="DCO check failed" /><published>2021-06-18T04:36:35+00:00</published><updated>2021-06-18T04:36:35+00:00</updated><id>https://xyw.io/dco/github/2021/06/18/dco-check-failed</id><content type="html" xml:base="https://xyw.io/dco/github/2021/06/18/dco-check-failed.html">&lt;p&gt;0x00 现象&lt;/p&gt;
+
+&lt;p&gt;有一天，在 GitHub 上提的 PR 遇到了 DCO 检查失败的问题，具体如下：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;You only have one commit incorrectly signed off! To fix, first ensure you have a local copy of your branch by &lt;a href=&quot;https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/checking-out-pull-requests-locally&quot;&gt;checking out the pull request locally via command line&lt;/a&gt;. Next, head to your local branch and run:&lt;/p&gt;
+
+  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  git commit --amend --no-edit --signoff
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;p&gt;Now your commits will have your sign off. Next run&lt;/p&gt;
+
+  &lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;  git push --force-with-lease origin 2106-test-DCO
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+
+  &lt;p&gt;Commit sha: &lt;a href=&quot;https://github.com/milvus-io/milvus/pull/5855/commits/bab823b7f5735a7f74d3ee69cda904f965d59b35&quot;&gt;bab823b&lt;/a&gt;, Author: Xiangyu Wang, Committer: GitHub; Expected “Xiangyu Wang &lt;a href=&quot;mailto:wxyucs@gmail.com&quot;&gt;wxyucs@gmail.com&lt;/a&gt;”, but got “Xiangyu Wang &lt;a href=&quot;mailto:xiangyu.wang@zilliz.com&quot;&gt;xiangyu.wang@zilliz.com&lt;/a&gt;”.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;提示我说 PR 中有一个 commit 的提交者和 commit message 中的签名不一致，实际上我可以确定开发环境中的配置是正确的。&lt;/p&gt;
+
+&lt;p&gt;0x01 分析&lt;/p&gt;
+
+&lt;p&gt;之前见过这个错误，当时想办法绕过去了，这次又遇到正好深究一下。&lt;/p&gt;
+
+&lt;p&gt;目前的情况是：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;我的 GitHub Primary email 是 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;wxyucs@gmail.com&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;这个 PR 的 head 分支是小A仓库的，我与他在这个分支上协作开发&lt;/li&gt;
+  &lt;li&gt;DCO 检查这个 action 是开源的&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;我先从这个 GitHub Action 的源代码查起，在代码里找到了这段检查和报错代码：&lt;/p&gt;
+
+&lt;div class=&quot;language-js highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;      &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;authors&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;includes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;sig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;toLowerCase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;emails&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;includes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;sig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;toLowerCase&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;commitInfo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;message&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;`Expected &quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;commit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;author&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; &amp;lt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;commit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;author&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;gt;&quot;, but got &quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;sig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; &amp;lt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;sig&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;email&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;gt;&quot;.`&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;failed&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;push&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;commitInfo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+      &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;通过阅读上下文得知，&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;commit&lt;/code&gt; 对象来自于 Git commit，&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sig&lt;/code&gt; 对象来自于 Git commit message 中的提取。目前 Git commit message 的内容是符合预期的，那么看来问题就出在 Git commit 上了。&lt;/p&gt;
+
+&lt;p&gt;我在本地拉取了这个 head 分支，用命令 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;git blame --line-porcelain&lt;/code&gt; 找到了那一行修改，看到的内容如下：&lt;/p&gt;
+
+&lt;div class=&quot;language-makefile highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;err&quot;&gt;bab823b7f5735a7f74d3ee69cda904f965d59b35&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;146&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;146&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;1&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;author&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;Xiangyu&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;Wang&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;author-mail&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;&amp;lt;wxyucs@gmail.com&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;author-time&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;1623988474&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;author-tz&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;+0800&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;committer&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;GitHub&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;committer-mail&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;&amp;lt;noreply@github.com&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;committer-time&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;1623988474&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;committer-tz&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;+0800&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;summary&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;Add&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;newline&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;README.md&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;c&quot;&gt;#3)
+&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;previous&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;6a2cfe43155d578abdd6b162229c38007061205c&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;Makefile&lt;/span&gt;
+&lt;span class=&quot;err&quot;&gt;filename&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;Makefile&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;这里可以看到 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;author-mail&lt;/code&gt; 已经错了，虽然这是我的邮箱，但不是这部分内容所需要的签名。另外，我注意到这里的 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;committer&lt;/code&gt; 是 GitHub，通过与小A交流得知，我往他仓库的 head 分支提交代码时，他使用了 &lt;em&gt;Squash and merge&lt;/em&gt;。&lt;/p&gt;
+
+&lt;p&gt;到这里大致可以猜出错误的原因：我在本地开发提交时的签名是正确的。在往小A仓库的协作分支提交 PR 时，由于选择的是 &lt;em&gt;Squash and merge&lt;/em&gt;，GitHub 用我的 GitHub Name 和 Primary email 作为作者的信息重新产生了一个 Git commit。所以在协作分支往主仓库提交 PR 时，检查到签名不匹配。而往常这个流程可用的原因是在协作分支上的 PR 使用的是 &lt;em&gt;Merge&lt;/em&gt; 而不是 &lt;em&gt;Squash and merge&lt;/em&gt;。&lt;/p&gt;
+
+&lt;p&gt;0x02 复现实验&lt;/p&gt;
+
+&lt;p&gt;有了以上的猜想，我按照如下步骤，果然复现了这个问题：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;从 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;master&lt;/code&gt; 分支新建一个开发分支 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dev&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;从 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dev&lt;/code&gt; 分支上新建一个功能分支 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;feature-update-readme&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;修改 readme，提交且签名（签上我的工作邮箱）&lt;/li&gt;
+  &lt;li&gt;在网页上创建一个 PR1，dev &amp;lt;- feature-update-readme&lt;/li&gt;
+  &lt;li&gt;在 PR1 的页面上，&lt;em&gt;Merge&lt;/em&gt; 按键右边三角形点开，选择 &lt;em&gt;Squash and merge&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;在网页上再创建一个 PR2，master &amp;lt;- dev&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;在 PR2 的页面上可以看到，DCO 检查失败，发现 committer 与 signed-off 不一致。&lt;/p&gt;
+
+&lt;p&gt;0x03 结论与解决方案&lt;/p&gt;
+
+&lt;p&gt;如果只有一个开发身份的话，应当把 GitHub Name 和 Primary email 设置成与本地 Git config 内容一致。如果有公司、个人甚至更多开发身份的时候，需要避免在开发分支上做 squash merge。&lt;/p&gt;
+
+&lt;p&gt;如果已经遇到了这个问题，可以使用命令 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;git commit --amend --author=&quot;Author Name &amp;lt;email@address.com&amp;gt; &quot; --no-edit&lt;/code&gt; 修改作者信息重新提交。&lt;/p&gt;
+
+&lt;p&gt;0x04 参考&lt;/p&gt;
+
+&lt;p&gt;https://docs.github.com/en/github/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/merging-a-pull-request&lt;/p&gt;
+
+&lt;p&gt;https://docs.github.com/en/github/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges#rebase-and-merge-your-pull-request-commits&lt;/p&gt;</content><author><name></name></author><category term="dco" /><category term="github" /><summary type="html">0x00 现象</summary></entry><entry><title type="html">Disable a keyboard key in Ubuntu</title><link href="https://xyw.io/ubuntu/2020/11/26/disable-a-keyboard-key.html" rel="alternate" type="text/html" title="Disable a keyboard key in Ubuntu" /><published>2020-11-26T00:00:00+00:00</published><updated>2020-11-26T00:00:00+00:00</updated><id>https://xyw.io/ubuntu/2020/11/26/disable-a-keyboard-key</id><content type="html" xml:base="https://xyw.io/ubuntu/2020/11/26/disable-a-keyboard-key.html">&lt;p&gt;To disable &lt;em&gt;Caps lock&lt;/em&gt; , open a terminal, and run &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;xev -event keyboard&lt;/code&gt;. It will open a app and if you press a key, the value will show on the screen. Then run the command below:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;xmodmap &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; “keycode &amp;lt;value&amp;gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;On my machine, to disable &lt;em&gt;ctrl&lt;/em&gt; should run:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;xmodmap &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; “keycode 37 &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;And then, the &lt;em&gt;Caps lock&lt;/em&gt; is disable.&lt;/p&gt;</content><author><name></name></author><category term="ubuntu" /><summary type="html">To disable Caps lock , open a terminal, and run xev -event keyboard. It will open a app and if you press a key, the value will show on the screen. Then run the command below:</summary></entry></feed>

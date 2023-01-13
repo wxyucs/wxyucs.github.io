@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <!-- Support to full screen on iPad-->
+  <link rel="manifest" href="/public/manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+  <title>
+    
+      What is Bloom filter &middot; Xiangyu Wang
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/syntax.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/public/apple-touch-icon-144-precomposed.png">
+                                 <link rel="shortcut icon" href="/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-V2N2C86YRH"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+  
+    gtag('config', 'G-V2N2C86YRH');
+  </script>
+</head>
+
+
+  <body>
+
+    <div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h2>
+        <a href="/">
+          Xiangyu Wang
+        </a>
+      </h2>
+      <p class="lead">I'm a software engineer and a maintainer at Milvus.<br> I'm interested in heterogeneous computing.<br> I believe that ARM is the future of computing.</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/">Home</a>
+
+      
+
+      
+      
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/about/">About</a>
+          
+        
+      
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/resume/">Resume</a>
+          
+        
+      
+        
+      
+        
+      
+
+      <a class="sidebar-nav-item" href="mailto:wxyucs@gmail.com">Email</a>
+      <a class="sidebar-nav-item" href="https://github.com/wxyucs">GitHub</a>
+    </nav>
+
+    <p>&copy; 2023. All rights reserved.</p>
+  </div>
+</div>
+
+
+    <div class="content container">
+      <div class="post">
+  <h1 class="post-title">What is Bloom filter</h1>
+  <span class="post-date">14 Jun 2022</span>
+  <p>Bloom filter是一个概率数据结构，用于检测一个元素是否存在于一个集合中，特点是空间占用少、计算速度快。</p>
+
+<p><br />
+<strong>基本原理</strong></p>
+
+<p>Bloom filter是一个数据结构，由一个长度为<code class="language-plaintext highlighter-rouge">m</code>的比特位数组和<code class="language-plaintext highlighter-rouge">k</code>个相互独立的哈希函数组成。每个哈希函数都可以将一个元素映射到数组的一个比特位上。</p>
+
+<p>元素加入集合的方法是，先用哈希函数将这个元素映射到<code class="language-plaintext highlighter-rouge">k</code>个位置，而后将比特位数组中的这<code class="language-plaintext highlighter-rouge">k</code>个位置的值都置为<code class="language-plaintext highlighter-rouge">1</code>。显而易见，在确定哈希函数和元素的情况下，比特位数组中置为1 的位置也是确定的。</p>
+
+<p>查询元素在集合中是否存在的方法是，先用哈希函数把元素映射成<code class="language-plaintext highlighter-rouge">k</code>个位置，然后再检查比特位数组中这<code class="language-plaintext highlighter-rouge">k</code>个位置的值。如果全是<code class="language-plaintext highlighter-rouge">1</code>则返回真，表示元素可能存在，相反则返回假，表示元素肯定不存在。</p>
+
+<p>这里说元素可能存在是因为这<code class="language-plaintext highlighter-rouge">k</code>个位置的<code class="language-plaintext highlighter-rouge">1</code>可能是在别的元素加入集合时设置的，被查询元素可能不在集合中。其他元素写入导致查询结果为真但实际上元素不在集合中，这种情况叫误报（假阳性）。误报是有一定概率的，叫误报率（假阳性率）。</p>
+
+<p><br />
+<strong>误报率（假阳性率）</strong></p>
+
+<p>误报率由元素数量<code class="language-plaintext highlighter-rouge">n</code>、比特位数组长度<code class="language-plaintext highlighter-rouge">m</code>和哈希函数数量<code class="language-plaintext highlighter-rouge">k</code>共同决定。</p>
+
+<p><a href="https://en.wikipedia.org/wiki/Bloom_filter#Probability_of_false_positives" title="Probability of false positives">误报率近似公式</a>：</p>
+
+<p><img src="https://wikimedia.org/api/rest_v1/media/math/render/svg/de73929baec5fd76dde95874189051648c635b1d" alt="" /></p>
+
+<p>简单来说，</p>
+
+<ul>
+  <li>元素数量越多，误报率越高</li>
+  <li>比特位数组越短，误报率越高</li>
+  <li>哈希函数越少，误报率越高</li>
+</ul>
+
+<p>所以，提升比特位数组长度和哈希函数数量可以降低误报率。但是，提升数组长度和哈希函数数量的代价是，比特位数组越长，所需存储空间越大；哈希函数数量越多，每次插入和查询的过程就越慢。</p>
+
+<p><br />
+<strong>如何配置参数n、m、k？</strong></p>
+
+<p><a href="https://en.wikipedia.org/wiki/Bloom_filter#Optimal_number_of_hash_functions" title="Optimal number of hash functions">使用n和m计算最优k值的公式</a>：</p>
+
+<p><img src="https://wikimedia.org/api/rest_v1/media/math/render/svg/fabc2770225ac59fe42a78f75ea89de650f0130c" alt="" /></p>
+
+<p>于是，可以通过以下步骤确定参数：</p>
+
+<ol>
+  <li>确定集合的数据量<code class="language-plaintext highlighter-rouge">n</code></li>
+  <li>确定预期的存储大小<code class="language-plaintext highlighter-rouge">m</code></li>
+  <li>使用公式计算得到<code class="language-plaintext highlighter-rouge">k</code></li>
+  <li>使用<code class="language-plaintext highlighter-rouge">n</code>、<code class="language-plaintext highlighter-rouge">m</code>和<code class="language-plaintext highlighter-rouge">k</code>计算得到误报率</li>
+  <li>若误报率太高，回到第2步通过提升<code class="language-plaintext highlighter-rouge">m</code>来调整</li>
+</ol>
+
+<p>一些在线的Bloom filter参数计算器：</p>
+
+<ul>
+  <li><a href="https://hur.st/bloomfilter/">https://hur.st/bloomfilter/</a></li>
+  <li><a href="https://krisives.github.io/bloom-calculator/">https://krisives.github.io/bloom-calculator/</a></li>
+</ul>
+
+<p><br />
+<strong>应用</strong></p>
+
+<p>在存储系统中，可以使用Bloom filter来判断一条记录是否在表中存在，从而减少磁盘I/O。例如，<a href="https://static.googleusercontent.com/media/research.google.com/en//archive/bigtable-osdi06.pdf" title="Bigtable: A Distributed Storage System for Structured Data">BigTable论文</a>中提到了使用Bloom filter来优化读取操作：在BigTable中，读取操作需要访问所有的SSTable。若这些SSTable不在内存中，可能会产生多次磁盘访问。BigTable可以为每个SSTable都建立一个Bloom filter，这样可以快速地知道一条指定的数据在一个SSTable中是否存在，从而避免无效的磁盘访问。</p>
+
+
+</div>
+
+<div class="related">
+  <h2>Related Posts</h2>
+  <ul class="related-posts">
+    
+      <li>
+        <h3>
+          <a href="/photography/2022/03/30/yunnan.html">
+            Yunnan
+            <small>30 Mar 2022</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/dco/github/2021/06/18/dco-check-failed.html">
+            DCO check failed
+            <small>18 Jun 2021</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/ubuntu/2020/11/26/disable-a-keyboard-key.html">
+            Disable a keyboard key in Ubuntu
+            <small>26 Nov 2020</small>
+          </a>
+        </h3>
+      </li>
+    
+  </ul>
+</div>
+
+    </div>
+
+  </body>
+</html>

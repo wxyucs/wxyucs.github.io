@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <!-- Support to full screen on iPad-->
+  <link rel="manifest" href="/public/manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+  <title>
+    
+      DCO check failed &middot; Xiangyu Wang
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/syntax.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/public/apple-touch-icon-144-precomposed.png">
+                                 <link rel="shortcut icon" href="/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-V2N2C86YRH"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+  
+    gtag('config', 'G-V2N2C86YRH');
+  </script>
+</head>
+
+
+  <body>
+
+    <div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h2>
+        <a href="/">
+          Xiangyu Wang
+        </a>
+      </h2>
+      <p class="lead">I'm a software engineer and a maintainer at Milvus.<br> I'm interested in heterogeneous computing.<br> I believe that ARM is the future of computing.</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/">Home</a>
+
+      
+
+      
+      
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/about/">About</a>
+          
+        
+      
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/resume/">Resume</a>
+          
+        
+      
+        
+      
+        
+      
+
+      <a class="sidebar-nav-item" href="mailto:wxyucs@gmail.com">Email</a>
+      <a class="sidebar-nav-item" href="https://github.com/wxyucs">GitHub</a>
+    </nav>
+
+    <p>&copy; 2023. All rights reserved.</p>
+  </div>
+</div>
+
+
+    <div class="content container">
+      <div class="post">
+  <h1 class="post-title">DCO check failed</h1>
+  <span class="post-date">18 Jun 2021</span>
+  <p>0x00 现象</p>
+
+<p>有一天，在 GitHub 上提的 PR 遇到了 DCO 检查失败的问题，具体如下：</p>
+
+<blockquote>
+  <p>You only have one commit incorrectly signed off! To fix, first ensure you have a local copy of your branch by <a href="https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/checking-out-pull-requests-locally">checking out the pull request locally via command line</a>. Next, head to your local branch and run:</p>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  git commit --amend --no-edit --signoff
+</code></pre></div>  </div>
+
+  <p>Now your commits will have your sign off. Next run</p>
+
+  <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  git push --force-with-lease origin 2106-test-DCO
+</code></pre></div>  </div>
+
+  <p>Commit sha: <a href="https://github.com/milvus-io/milvus/pull/5855/commits/bab823b7f5735a7f74d3ee69cda904f965d59b35">bab823b</a>, Author: Xiangyu Wang, Committer: GitHub; Expected “Xiangyu Wang <a href="mailto:wxyucs@gmail.com">wxyucs@gmail.com</a>”, but got “Xiangyu Wang <a href="mailto:xiangyu.wang@zilliz.com">xiangyu.wang@zilliz.com</a>”.</p>
+</blockquote>
+
+<p>提示我说 PR 中有一个 commit 的提交者和 commit message 中的签名不一致，实际上我可以确定开发环境中的配置是正确的。</p>
+
+<p>0x01 分析</p>
+
+<p>之前见过这个错误，当时想办法绕过去了，这次又遇到正好深究一下。</p>
+
+<p>目前的情况是：</p>
+
+<ul>
+  <li>我的 GitHub Primary email 是 <code class="language-plaintext highlighter-rouge">wxyucs@gmail.com</code></li>
+  <li>这个 PR 的 head 分支是小A仓库的，我与他在这个分支上协作开发</li>
+  <li>DCO 检查这个 action 是开源的</li>
+</ul>
+
+<p>我先从这个 GitHub Action 的源代码查起，在代码里找到了这段检查和报错代码：</p>
+
+<div class="language-js highlighter-rouge"><div class="highlight"><pre class="highlight"><code>      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="nx">authors</span><span class="p">.</span><span class="nx">includes</span><span class="p">(</span><span class="nx">sig</span><span class="p">.</span><span class="nx">name</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">()))</span> <span class="o">||</span> <span class="o">!</span><span class="p">(</span><span class="nx">emails</span><span class="p">.</span><span class="nx">includes</span><span class="p">(</span><span class="nx">sig</span><span class="p">.</span><span class="nx">email</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">())))</span> <span class="p">{</span>
+        <span class="nx">commitInfo</span><span class="p">.</span><span class="nx">message</span> <span class="o">=</span> <span class="s2">`Expected "</span><span class="p">${</span><span class="nx">commit</span><span class="p">.</span><span class="nx">author</span><span class="p">.</span><span class="nx">name</span><span class="p">}</span><span class="s2"> &lt;</span><span class="p">${</span><span class="nx">commit</span><span class="p">.</span><span class="nx">author</span><span class="p">.</span><span class="nx">email</span><span class="p">}</span><span class="s2">&gt;", but got "</span><span class="p">${</span><span class="nx">sig</span><span class="p">.</span><span class="nx">name</span><span class="p">}</span><span class="s2"> &lt;</span><span class="p">${</span><span class="nx">sig</span><span class="p">.</span><span class="nx">email</span><span class="p">}</span><span class="s2">&gt;".`</span>
+        <span class="nx">failed</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">commitInfo</span><span class="p">)</span>
+      <span class="p">}</span>
+</code></pre></div></div>
+
+<p>通过阅读上下文得知，<code class="language-plaintext highlighter-rouge">commit</code> 对象来自于 Git commit，<code class="language-plaintext highlighter-rouge">sig</code> 对象来自于 Git commit message 中的提取。目前 Git commit message 的内容是符合预期的，那么看来问题就出在 Git commit 上了。</p>
+
+<p>我在本地拉取了这个 head 分支，用命令 <code class="language-plaintext highlighter-rouge">git blame --line-porcelain</code> 找到了那一行修改，看到的内容如下：</p>
+
+<div class="language-makefile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">bab823b7f5735a7f74d3ee69cda904f965d59b35</span> <span class="err">146</span> <span class="err">146</span> <span class="err">1</span>
+<span class="err">author</span> <span class="err">Xiangyu</span> <span class="err">Wang</span>
+<span class="err">author-mail</span> <span class="err">&lt;wxyucs@gmail.com&gt;</span>
+<span class="err">author-time</span> <span class="err">1623988474</span>
+<span class="err">author-tz</span> <span class="err">+0800</span>
+<span class="err">committer</span> <span class="err">GitHub</span>
+<span class="err">committer-mail</span> <span class="err">&lt;noreply@github.com&gt;</span>
+<span class="err">committer-time</span> <span class="err">1623988474</span>
+<span class="err">committer-tz</span> <span class="err">+0800</span>
+<span class="err">summary</span> <span class="err">Add</span> <span class="err">a</span> <span class="err">newline</span> <span class="err">in</span> <span class="err">README.md</span> <span class="err">(</span><span class="c">#3)
+</span><span class="err">previous</span> <span class="err">6a2cfe43155d578abdd6b162229c38007061205c</span> <span class="err">Makefile</span>
+<span class="err">filename</span> <span class="err">Makefile</span>
+</code></pre></div></div>
+
+<p>这里可以看到 <code class="language-plaintext highlighter-rouge">author-mail</code> 已经错了，虽然这是我的邮箱，但不是这部分内容所需要的签名。另外，我注意到这里的 <code class="language-plaintext highlighter-rouge">committer</code> 是 GitHub，通过与小A交流得知，我往他仓库的 head 分支提交代码时，他使用了 <em>Squash and merge</em>。</p>
+
+<p>到这里大致可以猜出错误的原因：我在本地开发提交时的签名是正确的。在往小A仓库的协作分支提交 PR 时，由于选择的是 <em>Squash and merge</em>，GitHub 用我的 GitHub Name 和 Primary email 作为作者的信息重新产生了一个 Git commit。所以在协作分支往主仓库提交 PR 时，检查到签名不匹配。而往常这个流程可用的原因是在协作分支上的 PR 使用的是 <em>Merge</em> 而不是 <em>Squash and merge</em>。</p>
+
+<p>0x02 复现实验</p>
+
+<p>有了以上的猜想，我按照如下步骤，果然复现了这个问题：</p>
+
+<ol>
+  <li>从 <code class="language-plaintext highlighter-rouge">master</code> 分支新建一个开发分支 <code class="language-plaintext highlighter-rouge">dev</code></li>
+  <li>从 <code class="language-plaintext highlighter-rouge">dev</code> 分支上新建一个功能分支 <code class="language-plaintext highlighter-rouge">feature-update-readme</code></li>
+  <li>修改 readme，提交且签名（签上我的工作邮箱）</li>
+  <li>在网页上创建一个 PR1，dev &lt;- feature-update-readme</li>
+  <li>在 PR1 的页面上，<em>Merge</em> 按键右边三角形点开，选择 <em>Squash and merge</em></li>
+  <li>在网页上再创建一个 PR2，master &lt;- dev</li>
+</ol>
+
+<p>在 PR2 的页面上可以看到，DCO 检查失败，发现 committer 与 signed-off 不一致。</p>
+
+<p>0x03 结论与解决方案</p>
+
+<p>如果只有一个开发身份的话，应当把 GitHub Name 和 Primary email 设置成与本地 Git config 内容一致。如果有公司、个人甚至更多开发身份的时候，需要避免在开发分支上做 squash merge。</p>
+
+<p>如果已经遇到了这个问题，可以使用命令 <code class="language-plaintext highlighter-rouge">git commit --amend --author="Author Name &lt;email@address.com&gt; " --no-edit</code> 修改作者信息重新提交。</p>
+
+<p>0x04 参考</p>
+
+<p>https://docs.github.com/en/github/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/merging-a-pull-request</p>
+
+<p>https://docs.github.com/en/github/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/about-pull-request-merges#rebase-and-merge-your-pull-request-commits</p>
+
+</div>
+
+<div class="related">
+  <h2>Related Posts</h2>
+  <ul class="related-posts">
+    
+      <li>
+        <h3>
+          <a href="/note/bloomfilter/2022/06/14/what-is-bloom-filter.html">
+            What is Bloom filter
+            <small>14 Jun 2022</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/photography/2022/03/30/yunnan.html">
+            Yunnan
+            <small>30 Mar 2022</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/ubuntu/2020/11/26/disable-a-keyboard-key.html">
+            Disable a keyboard key in Ubuntu
+            <small>26 Nov 2020</small>
+          </a>
+        </h3>
+      </li>
+    
+  </ul>
+</div>
+
+    </div>
+
+  </body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+  <head>
+  <link href="http://gmpg.org/xfn/11" rel="profile">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+
+  <!-- Support to full screen on iPad-->
+  <link rel="manifest" href="/public/manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+  <title>
+    
+      Disable a keyboard key in Ubuntu &middot; Xiangyu Wang
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/public/css/poole.css">
+  <link rel="stylesheet" href="/public/css/syntax.css">
+  <link rel="stylesheet" href="/public/css/hyde.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700|Abril+Fatface">
+
+  <!-- Icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="/public/apple-touch-icon-144-precomposed.png">
+                                 <link rel="shortcut icon" href="/public/favicon.ico">
+
+  <!-- RSS -->
+  <link rel="alternate" type="application/rss+xml" title="RSS" href="/atom.xml">
+
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-V2N2C86YRH"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+  
+    gtag('config', 'G-V2N2C86YRH');
+  </script>
+</head>
+
+
+  <body>
+
+    <div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <h2>
+        <a href="/">
+          Xiangyu Wang
+        </a>
+      </h2>
+      <p class="lead">I'm a software engineer and a maintainer at Milvus.<br> I'm interested in heterogeneous computing.<br> I believe that ARM is the future of computing.</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="sidebar-nav-item" href="/">Home</a>
+
+      
+
+      
+      
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/about/">About</a>
+          
+        
+      
+        
+      
+        
+          
+            <a class="sidebar-nav-item" href="/resume/">Resume</a>
+          
+        
+      
+        
+      
+        
+      
+
+      <a class="sidebar-nav-item" href="mailto:wxyucs@gmail.com">Email</a>
+      <a class="sidebar-nav-item" href="https://github.com/wxyucs">GitHub</a>
+    </nav>
+
+    <p>&copy; 2023. All rights reserved.</p>
+  </div>
+</div>
+
+
+    <div class="content container">
+      <div class="post">
+  <h1 class="post-title">Disable a keyboard key in Ubuntu</h1>
+  <span class="post-date">26 Nov 2020</span>
+  <p>To disable <em>Caps lock</em> , open a terminal, and run <code class="language-plaintext highlighter-rouge">xev -event keyboard</code>. It will open a app and if you press a key, the value will show on the screen. Then run the command below:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>xmodmap <span class="nt">-e</span> “keycode &lt;value&gt; <span class="o">=</span> <span class="s2">"
+</span></code></pre></div></div>
+
+<p>On my machine, to disable <em>ctrl</em> should run:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>xmodmap <span class="nt">-e</span> “keycode 37 <span class="o">=</span> <span class="s2">"
+</span></code></pre></div></div>
+
+<p>And then, the <em>Caps lock</em> is disable.</p>
+
+</div>
+
+<div class="related">
+  <h2>Related Posts</h2>
+  <ul class="related-posts">
+    
+      <li>
+        <h3>
+          <a href="/note/bloomfilter/2022/06/14/what-is-bloom-filter.html">
+            What is Bloom filter
+            <small>14 Jun 2022</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/photography/2022/03/30/yunnan.html">
+            Yunnan
+            <small>30 Mar 2022</small>
+          </a>
+        </h3>
+      </li>
+    
+      <li>
+        <h3>
+          <a href="/dco/github/2021/06/18/dco-check-failed.html">
+            DCO check failed
+            <small>18 Jun 2021</small>
+          </a>
+        </h3>
+      </li>
+    
+  </ul>
+</div>
+
+    </div>
+
+  </body>
+</html>
