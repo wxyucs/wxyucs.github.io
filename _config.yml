@@ -26,6 +26,7 @@ description: >- # this means to ignore newlines until "baseurl:"
   I believe that ARM is the future of computing.
 baseurl: "/" # the subpath of your site, e.g. /blog
 url: "https://xyw.io" # the base hostname & protocol for your site, e.g. http://example.com
+photo_base_url: "https://img.xyw.io"
 github_username:  wxyucs
 
 # Build settings
@@ -58,3 +59,4 @@ version: 1.0.0
 exclude:
     - Makefile
     - README.md
+    - scripts

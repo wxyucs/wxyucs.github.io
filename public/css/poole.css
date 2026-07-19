@@ -234,6 +234,44 @@ img {
   border-radius: 5px;
 }
 
+.photo-media {
+  position: relative;
+  overflow: hidden;
+  margin: 0 0 2rem;
+  background-color: #e8e8e8;
+  background-image: var(--photo-placeholder);
+  background-position: center;
+  background-size: cover;
+  border-radius: 5px;
+}
+
+.photo-media a,
+.photo-media picture {
+  display: block;
+}
+
+.photo-media img {
+  width: 100%;
+  height: auto;
+  margin: 0;
+  border-radius: 0;
+}
+
+.photo-js .photo-media img {
+  opacity: 0;
+  transition: opacity .45s ease;
+}
+
+.photo-js .photo-media.is-loaded img {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photo-js .photo-media img {
+    transition: none;
+  }
+}
+
 /* Tables */
 table {
   margin-bottom: 1rem;

@@ -1,0 +1,38 @@
+{% assign photo = include.photo %}
+{% assign source_url = site.photo_base_url | append: photo.path %}
+{% assign transform_url = site.photo_base_url | append: "/cdn-cgi/image/" %}
+<figure
+  class="photo-media"
+  style="aspect-ratio: {{ photo.width }} / {{ photo.height }}; --photo-placeholder: url('{{ transform_url }}width=48,quality=30,blur=12,format=auto/{{ source_url }}');"
+>
+  <a href="{{ source_url }}">
+    <picture>
+      <source
+        type="image/avif"
+        srcset="{{ transform_url }}width=480,quality=75,format=avif/{{ source_url }} 480w,
+                {{ transform_url }}width=960,quality=78,format=avif/{{ source_url }} 960w,
+                {{ transform_url }}width=1600,quality=80,format=avif/{{ source_url }} 1600w"
+        sizes="(max-width: 38rem) 100vw, 38rem"
+      >
+      <source
+        type="image/webp"
+        srcset="{{ transform_url }}width=480,quality=75,format=webp/{{ source_url }} 480w,
+                {{ transform_url }}width=960,quality=78,format=webp/{{ source_url }} 960w,
+                {{ transform_url }}width=1600,quality=80,format=webp/{{ source_url }} 1600w"
+        sizes="(max-width: 38rem) 100vw, 38rem"
+      >
+      <img
+        src="{{ transform_url }}width=960,quality=82,format=jpeg/{{ source_url }}"
+        srcset="{{ transform_url }}width=480,quality=80,format=jpeg/{{ source_url }} 480w,
+                {{ transform_url }}width=960,quality=82,format=jpeg/{{ source_url }} 960w,
+                {{ transform_url }}width=1600,quality=84,format=jpeg/{{ source_url }} 1600w"
+        sizes="(max-width: 38rem) 100vw, 38rem"
+        width="{{ photo.width }}"
+        height="{{ photo.height }}"
+        alt="{{ photo.alt | default: photo.name }}"
+        {% if include.priority %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
+        decoding="async"
+      >
+    </picture>
+  </a>
+</figure>

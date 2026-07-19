@@ -11,5 +11,19 @@
       {{ content }}
     </div>
 
+    <script>
+      document.querySelectorAll('.photo-media img').forEach(function (image) {
+        var reveal = function () {
+          image.closest('.photo-media').classList.add('is-loaded');
+        };
+
+        if (image.complete && image.naturalWidth > 0) {
+          reveal();
+        } else {
+          image.addEventListener('load', reveal, { once: true });
+        }
+      });
+    </script>
+
   </body>
 </html>
